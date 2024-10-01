@@ -1,0 +1,74 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-image: url(https://img.freepik.com/vector-gratis/diseno-patron-dibujado-mano-temporada-regreso-escuela_23-2150542620.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1727740800&semt=ais_hybrid);
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+}
+
+.title {
+    text-align: center;
+    font-size: 24px; 
+    margin-top: 20px;
+}
+.card {
+    width: 200px;
+    height: 250px;
+    margin: 0 20px;
+    background-color: #87CEEB; 
+    border-radius: 10px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    overflow: hidden;
+}
+
+.card:nth-child(2) {
+    background-color: #FFB6C1;
+}
+.card p {
+    margin-bottom: auto;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.card img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+button {
+    width: 100%;
+    padding: 15px 0;
+    background-color: #6495ED;
+    color: white;
+    border: none;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.card:nth-child(2) button {
+    background-color: #FF69B4;
+}
+
+button:hover {
+    opacity: 0.9;
+}
