@@ -4,8 +4,8 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'tu_secreto_aqui'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://usuario:contraseña@host:puerto/nombre_bd'  # Sustituye con las credenciales de Clever Cloud
+app.config['SECRET_KEY'] = 'PNeZyC5a0GLUHljp0yvd'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://ucbx3vky0u2qn65r:PNeZyC5a0GLUHljp0yvd@b7yw5lq39svusrddrdv0-mysql.services.clever-cloud.com:3306/b7yw5lq39svusrddrdv0'  # Sustituye con las credenciales de Clever Cloud
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -22,8 +22,30 @@ class User(db.Model, UserMixin):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Ruta para sign up
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role')
+
+        # Verificar si el usuario ya existe
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash('El nombre de usuario ya está registrado. Elige otro.', 'danger')
+        else:
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            new_user = User(username=username, password=hashed_password, role=role)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('¡Registro exitoso! Ya puedes iniciar sesión.', 'success')
+            return redirect(url_for('login'))
+
+    return render_template('signup.html')
+
 # Ruta para login
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -40,19 +62,19 @@ def login():
     return render_template('login.html')
 
 # Rutas de Dashboard
-@app.route('/dashboard/profesor')
+@app.route('/profesor')
 @login_required
 def dashboard_profesor():
     if current_user.role != 'profesor':
         return redirect(url_for('login'))
-    return render_template('dashboard_profesor.html')
+    return render_template('profesores.html')
 
-@app.route('/dashboard/alumno')
+@app.route('/alumno')
 @login_required
 def dashboard_alumno():
     if current_user.role != 'alumno':
         return redirect(url_for('login'))
-    return render_template('dashboard_alumno.html')
+    return render_template('alumnos.html')
 
 # Ruta para logout
 @app.route('/logout')
@@ -62,4 +84,6 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # Crea las tablas si no existen
     app.run(debug=True, port=3500)
