@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Clase</title>
+    <title>Dashboard Profesor</title>
 </head>
 <body>
-    <h2>profesor</h2>
+    <h2>Profesor Dashboard</h2>
     <a href="{{ url_for('crear_clase') }}">Crear una nueva clase</a>
+    <ul>
+        {% for clase in clases %}
+            <li><a href="{{ url_for('clase', clase_id=clase.id) }}">{{ clase.nombre_clase }} (Código: {{ clase.codigo_clase }})</a></li>
+        {% else %}
+            <li>No has creado ninguna clase aún.</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>

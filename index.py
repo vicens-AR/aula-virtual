@@ -25,6 +25,8 @@ class Clase(db.Model):
     nombre_clase = db.Column(db.String(100), nullable=False)
     codigo_clase = db.Column(db.String(10), unique=True, nullable=False)
     profesor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    tareas = db.Column(db.Text, nullable=True)  # Para almacenar tareas
+    notificaciones = db.Column(db.Text, nullable=True)  # Para almacenar notificaciones
 
     profesor = db.relationship('User', backref='clases', lazy=True)
 
@@ -87,14 +89,37 @@ def login():
 def dashboard_profesor():
     if current_user.role != 'profesor':
         return redirect(url_for('login'))
-    return render_template('profesores.html')
+    
+    clases = Clase.query.filter_by(profesor_id=current_user.id).all()
+    return render_template('profesores.html', clases=clases)
 
 @app.route('/alumno')
 @login_required
 def dashboard_alumno():
     if current_user.role != 'alumno':
         return redirect(url_for('login'))
-    return render_template('alumnos.html')
+
+    clases_alumno = AlumnoClase.query.filter_by(alumno_id=current_user.id).all()
+    clases = [clase.clase for clase in clases_alumno]  # Obtener las clases a las que está unido el alumno
+    return render_template('alumnos.html', clases=clases)
+
+@app.route('/clase/<int:clase_id>', methods=['GET', 'POST'])
+@login_required
+def clase(clase_id):
+    clase = Clase.query.get_or_404(clase_id)
+
+    if request.method == 'POST':
+        tareas = request.form.get('tareas')
+        notificaciones = request.form.get('notificaciones')
+
+        clase.tareas = tareas
+        clase.notificaciones = notificaciones
+        db.session.commit()
+
+        flash('Clase actualizada exitosamente.', 'success')
+        return redirect(url_for('clase', clase_id=clase.id))
+
+    return render_template('clase.html', clase=clase)
 
 # Ruta para logout
 @app.route('/logout')

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ clase.nombre_clase }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .carta {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #0044cc;
+        }
+        .tareas, .notificaciones {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="carta">
+        <h2>{{ clase.nombre_clase }}</h2>
+        <h3>Código: {{ clase.codigo_clase }}</h3>
+
+        <h4>Tareas:</h4>
+        <div class="tareas">
+            <p>{{ clase.tareas if clase.tareas else 'No hay tareas asignadas.' }}</p>
+        </div>
+
+        <h4>Notificaciones:</h4>
+        <div class="notificaciones">
+            <p>{{ clase.notificaciones if clase.notificaciones else 'No hay notificaciones.' }}</p>
+        </div>
+
+        <form action="{{ url_for('clase', clase_id=clase.id) }}" method="POST">
+            <label for="tareas">Agregar Tareas:</label>
+            <textarea name="tareas" id="tareas" placeholder="Escribe aquí las tareas..." required></textarea>
+            <label for="notificaciones">Agregar Notificaciones:</label>
+            <textarea name="notificaciones" id="notificaciones" placeholder="Escribe aquí las notificaciones..." required></textarea>
+            <button type="submit">Actualizar Clase</button>
+        </form>
+    </div>
+</body>
+</html>
