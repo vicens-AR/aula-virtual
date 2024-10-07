@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import random
 import string
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'PNeZyC5a0GLUHljp0yvd'
@@ -38,6 +39,15 @@ class AlumnoClase(db.Model):
     alumno = db.relationship('User', backref='clases_alumno', lazy=True)
     clase = db.relationship('Clase', backref='alumnos', lazy=True)
 
+class EntregaTarea(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tarea_id = db.Column(db.Integer, db.ForeignKey('clase.id'), nullable=False)
+    alumno_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    contenido_entrega = db.Column(db.Text, nullable=False)
+    fecha_entrega = db.Column(db.DateTime, nullable=False)
+
+    alumno = db.relationship('User', backref='entregas', lazy=True)
+    clase = db.relationship('Clase', backref='entregas', lazy=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -82,6 +92,26 @@ def login():
             flash('Login fallido. Verifica tus credenciales.', 'danger')
     return render_template('login.html')
 
+@app.route('/entregar_tarea/<int:clase_id>', methods=['POST'])
+@login_required
+def entregar_tarea(clase_id):
+    if current_user.role != 'alumno':
+        return redirect(url_for('login'))
+
+    contenido_entrega = request.form.get('contenido_entrega')
+
+    nueva_entrega = EntregaTarea(
+        tarea_id=clase_id,
+        alumno_id=current_user.id,
+        contenido_entrega=contenido_entrega,
+        fecha_entrega=datetime.now()
+    )
+
+    db.session.add(nueva_entrega)
+    db.session.commit()
+
+    flash('Tarea entregada exitosamente.', 'success')
+    return redirect(url_for('dashboard_alumno'))
 
 # Rutas de Dashboard
 @app.route('/profesor')
