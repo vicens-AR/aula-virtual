@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Entregas</title>
+</head>
+<body>
+    <h2>Entregas para la clase {{ clase.nombre_clase }}</h2>
+
+    <ul>
+        {% for entrega in entregas %}
+            <li>
+                Alumno: {{ entrega.alumno.username }} 
+                <br>Archivo: <a href="{{ url_for('static', filename='uploads/' ~ entrega.archivo) }}" download>Descargar Tarea</a>
+                <br>
+                {% if entrega.nota %}
+                    Nota: {{ entrega.nota }}
+                {% else %}
+                    <form action="{{ url_for('ver_entregas', clase_id=clase.id) }}" method="POST">
+                        <input type="hidden" name="entrega_id" value="{{ entrega.id }}">
+                        <label for="nota">Nota:</label>
+                        <input type="number" name="nota" min="1" max="10" required>
+                        <label for="comentarios">Comentarios:</label>
+                        <textarea name="comentarios"></textarea>
+                        <button type="submit">Evaluar</button>
+                    </form>
+                {% endif %}
+            </li>
+        {% else %}
+            <li>No hay tareas entregadas aún.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('dashboard_profesor') }}">Volver al Dashboard</a>
+</body>
+</html>

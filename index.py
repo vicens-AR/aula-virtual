@@ -55,14 +55,15 @@ class AlumnoClase(db.Model):
 
 class EntregaTarea(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    tarea_id = db.Column(db.Integer, db.ForeignKey('clase.id'), nullable=False)
     alumno_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    contenido_entrega = db.Column(db.Text, nullable=False)
-    fecha_entrega = db.Column(db.DateTime, nullable=False)
+    clase_id = db.Column(db.Integer, db.ForeignKey('clase.id'), nullable=False)
+    archivo = db.Column(db.String(200), nullable=False)  # Ruta del archivo entregado
+    nota = db.Column(db.Integer, nullable=True)  # Nota de la evaluación
+    comentarios = db.Column(db.Text, nullable=True)  # Comentarios del profesor
 
     alumno = db.relationship('User', backref='entregas', lazy=True)
     clase = db.relationship('Clase', backref='entregas', lazy=True)
-    
+
 class TareaEntregada(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     alumno_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -156,6 +157,39 @@ def ver_entregas(clase_id):
     clase = Clase.query.get_or_404(clase_id)
     entregas = TareaEntregada.query.filter_by(clase_id=clase.id).all()
     return render_template('ver_entregas.html', entregas=entregas)
+
+@app.route('/profesor/clase/<int:clase_id>/entregas', methods=['GET', 'POST'])
+@login_required
+def ver_entregas_clase(clase_id):
+    if current_user.role != 'profesor':
+        return redirect(url_for('login'))
+    
+    clase = Clase.query.get_or_404(clase_id)
+    entregas = EntregaTarea.query.filter_by(clase_id=clase.id).all()
+
+    if request.method == 'POST':
+        entrega_id = request.form.get('entrega_id')
+        nota = request.form.get('nota')
+        comentarios = request.form.get('comentarios')
+
+        entrega = EntregaTarea.query.get(entrega_id)
+        entrega.nota = nota
+        entrega.comentarios = comentarios
+        db.session.commit()
+
+        flash('Evaluación registrada correctamente.', 'success')
+        return redirect(url_for('ver_entregas', clase_id=clase.id))
+
+    return render_template('ver_entregas.html', clase=clase, entregas=entregas)
+
+@app.route('/alumno/tareas_evaluadas')
+@login_required
+def tareas_evaluadas():
+    if current_user.role != 'alumno':
+        return redirect(url_for('login'))
+
+    entregas = EntregaTarea.query.filter_by(alumno_id=current_user.id).all()
+    return render_template('tareas_evaluadas.html', entregas=entregas)
 
 # Rutas de Dashboard
 @app.route('/profesor')

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas Evaluadas</title>
+</head>
+<body>
+    <h2>Tareas Evaluadas</h2>
+
+    <ul>
+        {% for entrega in entregas %}
+            <li>
+                Clase: {{ entrega.clase.nombre_clase }}
+                <br>Nota: {{ entrega.nota }}
+                <br>Comentarios: {{ entrega.comentarios if entrega.comentarios else 'No hay comentarios.' }}
+            </li>
+        {% else %}
+            <li>No tienes tareas evaluadas aún.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('dashboard_alumno') }}">Volver al Dashboard</a>
+</body>
+</html>
