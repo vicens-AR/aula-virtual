@@ -124,21 +124,18 @@ def entregar_tarea(clase_id):
     
     clase = Clase.query.get_or_404(clase_id)
     
-    # Verificar si el archivo ha sido subido
     if 'archivo' not in request.files:
         flash('No se seleccionó ningún archivo', 'danger')
         return redirect(request.url)
     
     archivo = request.files['archivo']
     
-    # Verificar si el archivo es válido
     if archivo and allowed_file(archivo.filename):
-        # Asegurar el nombre del archivo
         filename = secure_filename(archivo.filename)
         archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         
-        # Guardar la tarea en la base de datos
-        nueva_tarea = TareaEntregada(alumno_id=current_user.id, clase_id=clase.id, archivo=filename)
+        # Guardar la tarea en la tabla EntregaTarea
+        nueva_tarea = EntregaTarea(alumno_id=current_user.id, clase_id=clase.id, archivo=filename)
         db.session.add(nueva_tarea)
         db.session.commit()
         
@@ -155,7 +152,9 @@ def ver_entregas(clase_id):
         return redirect(url_for('login'))
     
     clase = Clase.query.get_or_404(clase_id)
-    entregas = TareaEntregada.query.filter_by(clase_id=clase.id).all()
+    # Consulta las entregas desde la tabla correcta
+    entregas = EntregaTarea.query.filter_by(clase_id=clase.id).all()
+    
     return render_template('ver_entregas.html', entregas=entregas)
 
 @app.route('/profesor/clase/<int:clase_id>/entregas', methods=['GET', 'POST'])

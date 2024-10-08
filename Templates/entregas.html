@@ -10,7 +10,7 @@
     <ul>
         {% for entrega in entregas %}
             <li>
-                Alumno: {{ entrega.alumno.username }}<br>
+                Alumno: {{ entrega.alumno.nombre }}<br>
                 Archivo: <a href="{{ url_for('static', filename='uploads/' + entrega.archivo) }}">{{ entrega.archivo }}</a><br>
                 Fecha de entrega: {{ entrega.fecha_entrega }}
             </li>
