@@ -5,8 +5,22 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 import random
 import string
 from datetime import datetime
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+# Configuración de la carpeta uploads
+upload_folder = os.path.join(os.path.dirname(__file__), 'uploads')
+if not os.path.exists(upload_folder):
+    os.makedirs(upload_folder)
+
+app.config['UPLOAD_FOLDER'] = upload_folder
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB de límite para archivos
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'doc', 'docx', 'jpg', 'png'}
+
 app.config['SECRET_KEY'] = 'PNeZyC5a0GLUHljp0yvd'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://ucbx3vky0u2qn65r:PNeZyC5a0GLUHljp0yvd@b7yw5lq39svusrddrdv0-mysql.services.clever-cloud.com:3306/b7yw5lq39svusrddrdv0'  # Credenciales de Clever Cloud
 db = SQLAlchemy(app)
@@ -48,6 +62,15 @@ class EntregaTarea(db.Model):
 
     alumno = db.relationship('User', backref='entregas', lazy=True)
     clase = db.relationship('Clase', backref='entregas', lazy=True)
+    
+class TareaEntregada(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    alumno_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    clase_id = db.Column(db.Integer, db.ForeignKey('clase.id'), nullable=False)
+    archivo = db.Column(db.String(200), nullable=False)  # Guardar el nombre del archivo
+
+    alumno = db.relationship('User', backref='tareas_entregadas', lazy=True)
+    clase = db.relationship('Clase', backref='tareas_entregadas', lazy=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -92,26 +115,47 @@ def login():
             flash('Login fallido. Verifica tus credenciales.', 'danger')
     return render_template('login.html')
 
-@app.route('/entregar_tarea/<int:clase_id>', methods=['POST'])
+@app.route('/clase/<int:clase_id>/entregar_tarea', methods=['POST'])
 @login_required
 def entregar_tarea(clase_id):
     if current_user.role != 'alumno':
         return redirect(url_for('login'))
+    
+    clase = Clase.query.get_or_404(clase_id)
+    
+    # Verificar si el archivo ha sido subido
+    if 'archivo' not in request.files:
+        flash('No se seleccionó ningún archivo', 'danger')
+        return redirect(request.url)
+    
+    archivo = request.files['archivo']
+    
+    # Verificar si el archivo es válido
+    if archivo and allowed_file(archivo.filename):
+        # Asegurar el nombre del archivo
+        filename = secure_filename(archivo.filename)
+        archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        # Guardar la tarea en la base de datos
+        nueva_tarea = TareaEntregada(alumno_id=current_user.id, clase_id=clase.id, archivo=filename)
+        db.session.add(nueva_tarea)
+        db.session.commit()
+        
+        flash('Tarea entregada exitosamente.', 'success')
+        return redirect(url_for('dashboard_alumno'))
+    else:
+        flash('El archivo no tiene una extensión permitida', 'danger')
+        return redirect(request.url)
 
-    contenido_entrega = request.form.get('contenido_entrega')
-
-    nueva_entrega = EntregaTarea(
-        tarea_id=clase_id,
-        alumno_id=current_user.id,
-        contenido_entrega=contenido_entrega,
-        fecha_entrega=datetime.now()
-    )
-
-    db.session.add(nueva_entrega)
-    db.session.commit()
-
-    flash('Tarea entregada exitosamente.', 'success')
-    return redirect(url_for('dashboard_alumno'))
+@app.route('/profesor/clase/<int:clase_id>/ver_entregas')
+@login_required
+def ver_entregas(clase_id):
+    if current_user.role != 'profesor':
+        return redirect(url_for('login'))
+    
+    clase = Clase.query.get_or_404(clase_id)
+    entregas = TareaEntregada.query.filter_by(clase_id=clase.id).all()
+    return render_template('ver_entregas.html', entregas=entregas)
 
 # Rutas de Dashboard
 @app.route('/profesor')

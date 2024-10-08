@@ -17,11 +17,11 @@
             <p>{{ clase.tareas if clase.tareas else 'No hay tareas asignadas.' }}</p>
 
             {% if clase.tareas %}
-                <form action="{{ url_for('entregar_tarea', clase_id=clase.id) }}" method="POST">
-                    <label for="contenido_entrega">Entrega de tarea:</label>
-                    <textarea name="contenido_entrega" id="contenido_entrega" placeholder="Escribe aquí tu entrega..." required></textarea>
-                    <button type="submit">Entregar Tarea</button>
-                </form>
+            <form action="{{ url_for('entregar_tarea', clase_id=clase.id) }}" method="POST" enctype="multipart/form-data">
+                <label for="archivo">Adjuntar archivo:</label>
+                <input type="file" name="archivo" id="archivo" required>
+                <button type="submit">Entregar Tarea</button>
+            </form>
             {% endif %}
         {% else %}
             <li>No estás unido a ninguna clase.</li>
