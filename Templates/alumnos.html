@@ -11,6 +11,7 @@
 <body>
     <h2>Alumno: {{ current_user.username }}</h2>
     <a href="{{ url_for('unirse_clase') }}">Unirse a una nueva clase</a>
+    
     <h3>Clases a las que estás unido:</h3>
     <ul>
         {% for clase in clases %}
@@ -20,11 +21,28 @@
             <p>{{ clase.tareas if clase.tareas else 'No hay tareas asignadas.' }}</p>
 
             {% if clase.tareas %}
-            <form action="{{ url_for('entregar_tarea', clase_id=clase.id) }}" method="POST" enctype="multipart/form-data">
-                <label for="archivo">Adjuntar archivo:</label>
-                <input type="file" name="archivo" id="archivo" required>
-                <button type="submit">Entregar Tarea</button>
-            </form>
+                <form action="{{ url_for('entregar_tarea', clase_id=clase.id) }}" method="POST" enctype="multipart/form-data">
+                    <label for="archivo">Adjuntar archivo:</label>
+                    <input type="file" name="archivo" id="archivo" required>
+                    <button type="submit">Entregar Tarea</button>
+                </form>
+
+                {% for tarea in clase.entregas %}
+                    {% if tarea.completado %}
+                        <p><strong>Archivo entregado:</strong> 
+                            <a href="{{ url_for('static', filename='uploads/' + tarea.archivo) }}">
+                                {{ tarea.archivo }}
+                            </a>
+                        </p>
+                        
+                        {% if tarea.nota is not none %}
+                            <p><strong>Nota:</strong> {{ tarea.nota }}</p>
+                            <p><strong>Comentarios del profesor:</strong> {{ tarea.comentarios }}</p>
+                        {% else %}
+                            <p>Aún no has recibido una calificación.</p>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
             {% endif %}
         {% else %}
             <li>No estás unido a ninguna clase.</li>
@@ -32,3 +50,4 @@
     </ul>
 </body>
 {% endblock %}
+

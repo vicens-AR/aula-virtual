@@ -125,12 +125,6 @@ def entregar_tarea(clase_id):
     
     clase = Clase.query.get_or_404(clase_id)
     
-    # Verificar si el alumno ya entregó la tarea
-    tarea_existente = EntregaTarea.query.filter_by(alumno_id=current_user.id, clase_id=clase_id, completado=True).first()
-    if tarea_existente:
-        flash('Ya entregaste esta tarea y no puedes volver a entregarla.', 'warning')
-        return redirect(url_for('dashboard_alumno'))
-
     if 'archivo' not in request.files:
         flash('No se seleccionó ningún archivo', 'danger')
         return redirect(request.url)
@@ -204,7 +198,13 @@ def dashboard_alumno():
 
     clases_alumno = AlumnoClase.query.filter_by(alumno_id=current_user.id).all()
     clases = [clase.clase for clase in clases_alumno]  # Obtener las clases a las que está unido el alumno
+
+    # Incluir las entregas de tareas con sus notas y comentarios
+    for clase in clases:
+        clase.entregas = EntregaTarea.query.filter_by(alumno_id=current_user.id, clase_id=clase.id).all()
+
     return render_template('alumnos.html', clases=clases)
+
 
 @app.route('/clase/<int:clase_id>', methods=['GET', 'POST'])
 @login_required
