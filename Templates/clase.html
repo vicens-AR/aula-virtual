@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
+<title>{% block title %}{{ clase.nombre_clase }}{% endblock %}</title>
+
+{% block extra_head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ clase.nombre_clase }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,7 +25,9 @@
             margin: 20px 0;
         }
     </style>
-</head>
+{% endblock %}
+
+{% block body %}
 <body>
     <div class="carta">
         <h2>{{ clase.nombre_clase }}</h2>
@@ -51,4 +52,4 @@
         </form>
     </div>
 </body>
-</html>
+{% endblock %}

@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
+<title>{% block title %}Entregas{% endblock %}</title>
+
+{% block extra_head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entregas de la clase</title>
-</head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/entregas.css') }}">
+    <link rel="icon" href="https://images.vexels.com/content/224180/preview/delivery-place-logo-d92969.png">
+{% endblock %}
+
+{% block body %}
 <body>
     <h2>Entregas de la clase</h2>
     <ul>
@@ -19,4 +22,4 @@
         {% endfor %}
     </ul>
 </body>
-</html>
+{% endblock %}

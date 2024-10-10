@@ -1,16 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<title>{% block title %}Clasrum - Ingresar{% endblock %}</title>
+
+{% block extra_head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-</head>
+    <link rel="icon" href="https://i.pinimg.com/originals/1a/31/df/1a31dfc5bc01249428e77a668505df0f.png">
+{% endblock %}
+
+{% block body %}
 <body>
-    <form action="{{ url_for('login') }}" method="POST">
-        <input type="text" name="username" placeholder="Usuario" required>
-        <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit">Ingresar</button>
-    </form>    
+    <div class="login-container">
+        <div class="login-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/147/147144.png" alt="Usuario" class="user-image">
+            <h2>Bienvenido a Clasrum</h2>
+            <form action="{{ url_for('login') }}" method="POST">
+                <input type="text" name="username" placeholder="Usuario" required>
+                <input type="password" name="password" placeholder="Contraseña" required>
+                <button type="submit">Ingresar</button>
+            </form>
+        </div>
+    </div>
 </body>
-</html>
+{% endblock %}

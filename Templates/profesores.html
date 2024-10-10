@@ -1,23 +1,33 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
+<title>{% block title %}Profesor{% endblock %}</title>
+
+{% block extra_head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Profesor</title>
-</head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profesores.css') }}">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3805/3805742.png">
+{% endblock %}
+
+{% block body %}
 <body>
-    <h2>Profesor Dashboard</h2>
-    <a href="{{ url_for('crear_clase') }}">Crear una nueva clase</a>
-    <ul>
-        {% for clase in clases %}
-            <li>
-                <a href="{{ url_for('clase', clase_id=clase.id) }}">{{ clase.nombre_clase }} (Código: {{ clase.codigo_clase }})</a>
-                <!-- Enlace para ver las entregas de esta clase -->
-                <a href="{{ url_for('ver_entregas_clase', clase_id=clase.id) }}">Ver entregas</a>
-            </li>
-        {% else %}
-            <li>No has creado ninguna clase aún.</li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        <header>
+            <h2>Profesor: {{ current_user.username }}</h2>
+            <a href="{{ url_for('crear_clase') }}" class="btn">Crear una nueva clase</a>
+        </header>
+
+        <section class="clases-list">
+            <h3>Mis Clases</h3>
+            <ul>
+                {% for clase in clases %}
+                    <li class="clase-item">
+                        <a href="{{ url_for('clase', clase_id=clase.id) }}" class="clase-link">{{ clase.nombre_clase }} (Código: {{ clase.codigo_clase }})</a>
+                        <a href="{{ url_for('ver_entregas_clase', clase_id=clase.id) }}" class="entregas-link">Ver entregas</a>
+                    </li>
+                {% else %}
+                    <li class="clase-item no-clases">No has creado ninguna clase aún.</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
 </body>
-</html>
+{% endblock %}
