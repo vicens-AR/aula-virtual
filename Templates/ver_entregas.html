@@ -15,7 +15,21 @@
             <li>
                 Alumno: {{ entrega.alumno.username }}<br>
                 Archivo: <a href="{{ url_for('static', filename='uploads/' + entrega.archivo) }}">{{ entrega.archivo }}</a><br>
-                Fecha de entrega: {{ entrega.fecha_entrega }}
+                Fecha de entrega: {{ entrega.fecha_entrega }}<br>
+                
+                {% if entrega.nota is not none %}
+                    <p>Nota: {{ entrega.nota }}</p>
+                    <p>Comentarios: {{ entrega.comentarios }}</p>
+                {% else %}
+                    <form action="{{ url_for('ver_entregas_clase', clase_id=clase.id) }}" method="POST">
+                        <input type="hidden" name="entrega_id" value="{{ entrega.id }}">
+                        <label for="nota">Nota:</label>
+                        <input type="number" name="nota" id="nota" min="0" max="10" required><br>
+                        <label for="comentarios">Comentarios:</label>
+                        <textarea name="comentarios" id="comentarios" rows="3" required></textarea><br>
+                        <button type="submit">Enviar evaluación</button>
+                    </form>
+                {% endif %}
             </li>
         {% else %}
             <li>No se han realizado entregas todavía.</li>

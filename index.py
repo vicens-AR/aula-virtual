@@ -60,6 +60,7 @@ class EntregaTarea(db.Model):
     archivo = db.Column(db.String(200), nullable=False)  # Ruta del archivo entregado
     nota = db.Column(db.Integer, nullable=True)  # Nota de la evaluación
     comentarios = db.Column(db.Text, nullable=True)  # Comentarios del profesor
+    completado = db.Column(db.Boolean, default=False)  # Nuevo campo para marcar como completado
 
     alumno = db.relationship('User', backref='entregas', lazy=True)
     clase = db.relationship('Clase', backref='entregas', lazy=True)
@@ -124,6 +125,12 @@ def entregar_tarea(clase_id):
     
     clase = Clase.query.get_or_404(clase_id)
     
+    # Verificar si el alumno ya entregó la tarea
+    tarea_existente = EntregaTarea.query.filter_by(alumno_id=current_user.id, clase_id=clase_id, completado=True).first()
+    if tarea_existente:
+        flash('Ya entregaste esta tarea y no puedes volver a entregarla.', 'warning')
+        return redirect(url_for('dashboard_alumno'))
+
     if 'archivo' not in request.files:
         flash('No se seleccionó ningún archivo', 'danger')
         return redirect(request.url)
@@ -134,8 +141,8 @@ def entregar_tarea(clase_id):
         filename = secure_filename(archivo.filename)
         archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         
-        # Guardar la tarea en la tabla EntregaTarea
-        nueva_tarea = EntregaTarea(alumno_id=current_user.id, clase_id=clase.id, archivo=filename)
+        # Guardar la tarea en la tabla EntregaTarea y marcarla como completada
+        nueva_tarea = EntregaTarea(alumno_id=current_user.id, clase_id=clase.id, archivo=filename, completado=True)
         db.session.add(nueva_tarea)
         db.session.commit()
         
@@ -145,17 +152,6 @@ def entregar_tarea(clase_id):
         flash('El archivo no tiene una extensión permitida', 'danger')
         return redirect(request.url)
 
-@app.route('/profesor/clase/<int:clase_id>/ver_entregas')
-@login_required
-def ver_entregas(clase_id):
-    if current_user.role != 'profesor':
-        return redirect(url_for('login'))
-    
-    clase = Clase.query.get_or_404(clase_id)
-    # Consulta las entregas desde la tabla correcta
-    entregas = EntregaTarea.query.filter_by(clase_id=clase.id).all()
-    
-    return render_template('ver_entregas.html', entregas=entregas)
 
 @app.route('/profesor/clase/<int:clase_id>/entregas', methods=['GET', 'POST'])
 @login_required
@@ -177,7 +173,7 @@ def ver_entregas_clase(clase_id):
         db.session.commit()
 
         flash('Evaluación registrada correctamente.', 'success')
-        return redirect(url_for('ver_entregas', clase_id=clase.id))
+        return redirect(url_for('ver_entregas_clase', clase_id=clase.id))
 
     return render_template('ver_entregas.html', clase=clase, entregas=entregas)
 
